@@ -1,0 +1,78 @@
+% TITLE
+% AUTHOR
+% DATE, for example, 2018-12-09
+
+---
+# subtitle:
+# abstract: |
+#     First paragraph.
+
+#     Second paragraph.
+
+# # LANGUAGE {{{
+lang:                 en
+# toc-title:            Table of Contents
+# # }}}
+
+# # SECTIONING {{{
+# toc:                  false
+# toc-depth:            2
+# numbersections:       true
+# # only respected by LaTeX:
+# secnumdepth:          1
+# # }}}
+
+# # LATEX {{{
+babel-lang:           USenglish
+documentclass:        scrartcl
+indent:               true
+
+classoption:          final, DIV=calc, headings=normal, parskip=half, bibliography=totoc
+
+fontsize:             12pt
+citecolor:            Sepia
+linkcolor:            Sepia
+urlcolor:             Sepia
+
+# header-includes:      |
+#     \input{$HOME/.pandoc/headers/latex/header.tex}
+#     % to translate "..." into language-specific quotation marks
+#     \RequirePackage{csquotes}
+# }}}
+
+# # PANDOC-CITEPROC {{{
+# bibliography:         main.bib
+# # }}}
+
+# # PANDOC-CROSSREF {{{
+
+# # number pandoc-crossref equations chapter-wise:
+# chapters:             true
+# chaptersDepth:        1
+# numberSections:       true
+# sectionsDepth:        2
+  
+# linkReferences:       true
+
+# # pandoc-crossref names:
+# figureTitle:          Figure
+# tableTitle:           Table
+# figPrefix:
+#                       - "fig."
+#                       - "figs."
+# tblPrefix:
+#                       - "tbl."
+#                       - "tbls."
+# eqnPrefix:
+#                       - "eq."
+#                       - "eqs."
+# secPrefix:
+#                       - "sec."
+#                       - "secs."
+# pairDelim:            and
+# lastDelim:            and
+
+# # }}}
+
+# ex: set foldmethod=marker:
+...
