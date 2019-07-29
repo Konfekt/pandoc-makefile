@@ -1,4 +1,9 @@
-# # the NAME of the main file NAME.pandoc, for example, main.pandoc
+# Use maximal number of CPU cores
+MAKEFLAGS += --jobs=$(shell getconf _NPROCESSORS_ONLN) 
+# Only ouput invoked command if $VERBOSE is set
+$(VERBOSE).SILENT:
+
+# the NAME of the main file NAME.pandoc, for example, main.pandoc
 NAME  = main
 FILES = # (sub)files, for example, for each chapter one chapter.md
 DEP   = $(NAME).pandoc $(FILES)
