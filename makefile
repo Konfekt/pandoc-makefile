@@ -38,6 +38,7 @@ PANDOC_LATEX_OPTIONS  = \
 PANDOC_BEAMER_OPTIONS = \
 #	# You might want to add a custom header, such as:
 											# --include-in-header ~/.pandoc/headers/beamer/header.tex
+# PANDOC_PDF_OPTIONS    = -fmt=preamble
 # }}}
 
 # COMPILE {{{
@@ -78,10 +79,15 @@ beamer: $(DEP)
 			$(PANDOC_BEAMER_OPTIONS) \
 			--from markdown --to beamer \
 			$(NAME).pandoc $(FILES) --output $(NAME).tex
-# pdf: latex beamer
-	# latexrun --color never $(NAME).tex
 pdf:
-	latexrun --color never $(NAME).tex
+	latexrun --latex-args="$(PANDOC_PDF_OPTIONS)" --color never $(NAME).tex
+# pdf:
+# 	pandoc \
+# 		$(PANDOC_OPTIONS) \
+# 		$(PANDOC_LATEX_OPTIONS) \
+#     --pdf-engine-opt="$(PANDOC_PDF_OPTIONS)" \
+# 		--from markdown --to latex \
+# 		$(NAME).pandoc $(FILES) --output $(NAME).pdf
 # }}}
 
 # RUN {{{
