@@ -17,12 +17,14 @@ PANDOC_OPTIONS        = \
 #	# you might want to add
 							          # --filter=pandoc-crossref \
 # # When there are citations (to bibliography), you might want to add
+							          #  --citeproc \
+# # or, for pandoc versions < 2.1,
 							          #  --filter=pandoc-citeproc \
 #	# You might want to add additional options, such as:
 							          # --toc --toc-depth 2 --number-sections
 
-PANDOC_DOCX_OPTIONS   = # --reference-docx=FILE
-PANDOC_ODT_OPTIONS    = # --reference-odt=FILE
+PANDOC_DOCX_OPTIONS   = # --reference-doc=FILE
+PANDOC_ODT_OPTIONS    = # --reference-doc=FILE
 PANDOC_EPUB_OPTIONS   = \
 #	# You might want to add a stylesheet, such as:
 										    # --epub-stylesheet ~/.pandoc/stylesheets/solarized.css
@@ -32,10 +34,13 @@ PANDOC_HTML_OPTIONS   = \
 												# --mathml \
 #	# You might want to add a stylesheet, such as:
 										    # --css ~/.pandoc/stylesheets/solarized.css
+# # e-mail obfuscation
+												# --email-obfuscation=references
+
 PANDOC_LATEX_OPTIONS  = \
 #	# You might want to add a custom header, such as:
 											# --include-in-header ~/.pandoc/headers/latex/header.tex
-PANDOC_BEAMER_OPTIONS = \
+PANDOC_BEAMER_OPTIONS = # --reference-doc=FILE
 #	# You might want to add a custom header, such as:
 											# --include-in-header ~/.pandoc/headers/beamer/header.tex
 # PANDOC_PDF_OPTIONS    = -fmt=preamble
@@ -91,37 +96,37 @@ pdf:
 # }}}
 
 # RUN {{{
-run: run_pdf
-run_docx: docx
+run: run-pdf
+run-docx: docx
 	libreoffice --nologo $(NAME).docx \
 	>/dev/null 2>&1 &
-run_odt: odt
+run-odt: odt
 	okular $(NAME).odt \
 	>/dev/null 2>&1 &
-run_epub: epub
+run-epub: epub
 	okular $(NAME).epub \
 	>/dev/null 2>&1 &
-run_html: html
+run-html: html
 	$(BROWSER) $(NAME).html \
 	>/dev/null 2>&1 &
-run_pdf:
+run-pdf:
 	$(PDFVIEWER) $(NAME).pdf \
 	>/dev/null 2>&1 &
 # }}}
 
 # CLEAN {{{
-clean: clean_docx clean_odt clean_epub clean_html clean_latex clean_pdf
-clean_docx:
+clean: clean-docx clean-odt clean-epub clean-html clean-latex clean-pdf
+clean-docx:
 	rm --force --verbose *.docx
-clean_odt:
+clean-odt:
 	rm --force --verbose *.odt
-clean_epub:
+clean-epub:
 	rm --force --verbose *.epub
-clean_html:
+clean-html:
 	rm --force --verbose *.html
-clean_latex:
+clean-latex:
 	rm --force --verbose $(NAME).tex
-clean_pdf:
+clean-pdf:
 	latexrun --clean-all
 	rm --force --verbose $(NAME).pdf
 # }}}
@@ -134,13 +139,13 @@ check_latex:
 	lacheck $(NAME).tex
 # }}}
 
-preamble_latex: $(NAME).tex
+preamble: $(NAME).tex
 	pdftex -ini -interaction=nonstopmode -jobname=preamble "&pdflatex" mylatexformat.ltx $(NAME).tex
 
-watch_html: html
+watch: html
 	if command -v entr > /dev/null; then \
 		find . -print | grep -i '.*[.]html' | entr -n reload-browser Firefox; \
-	else $(MAKE) run_html; \
+	else $(MAKE) run-html; \
 		echo "\nInstall entr(1) to run tasks on file change. \n"; \
 		echo "See http://entrproject.org/"; fi
 
