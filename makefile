@@ -1,5 +1,5 @@
 # Use maximal number of CPU cores
-MAKEFLAGS += --jobs=$(shell getconf _NPROCESSORS_ONLN) 
+MAKEFLAGS += --jobs=$(shell getconf _NPROCESSORS_ONLN)
 # Only ouput invoked command if $VERBOSE is set
 $(VERBOSE).SILENT:
 
@@ -7,12 +7,22 @@ $(VERBOSE).SILENT:
 NAME  = main
 FILES = # (sub)files, for example, for each chapter one chapter.md
 DEP   = $(NAME).pandoc $(FILES)
-# # When there are images, you might want to add 
+# # When there are (jpg,png,gif) images, say in images/, you might want to add
 # $(wildcard images/*.{jpg,jpeg,png,gif})
 
 # OPTIONS {{{
-PANDOC_OPTIONS        = \
-												--standalone \
+
+# Pandoc versions >= 3 added the --defaults parameter, say
+# --defaults=$HOME/.pandoc/defaults.yaml, to set instead options inside
+#  defaults.yaml, for example:
+#
+#   self-contained: true
+#   include-in-header:
+#   	- ${HOME}/.pandoc/headers/latex/header.tex
+#		css:
+# 		- ${HOME}/.pandoc/stylesheets/solarized.css
+
+PANDOC_OPTIONS        = --standalone
 # # When there are references (to sections, figures, tables, ...),
 #	# you might want to add
 							          # --filter=pandoc-crossref \
@@ -25,11 +35,11 @@ PANDOC_OPTIONS        = \
 
 PANDOC_DOCX_OPTIONS   = # --reference-doc=FILE
 PANDOC_ODT_OPTIONS    = # --reference-doc=FILE
-PANDOC_EPUB_OPTIONS   = \
+PANDOC_EPUB_OPTIONS   =
 #	# You might want to add a stylesheet, such as:
 										    # --epub-stylesheet ~/.pandoc/stylesheets/solarized.css
-PANDOC_HTML_OPTIONS   = \
-												--self-contained \
+PANDOC_HTML_OPTIONS   =
+												--embed-resources --standalone --strip-comments --self-contained
 # # when there are are formulas, you might want to add
 												# --mathml \
 #	# You might want to add a stylesheet, such as:
@@ -37,7 +47,7 @@ PANDOC_HTML_OPTIONS   = \
 # # e-mail obfuscation
 												# --email-obfuscation=references
 
-PANDOC_LATEX_OPTIONS  = \
+PANDOC_LATEX_OPTIONS  =
 #	# You might want to add a custom header, such as:
 											# --include-in-header ~/.pandoc/headers/latex/header.tex
 PANDOC_BEAMER_OPTIONS = # --reference-doc=FILE
@@ -84,9 +94,9 @@ beamer: $(DEP)
 			$(PANDOC_BEAMER_OPTIONS) \
 			--from markdown --to beamer \
 			$(NAME).pandoc $(FILES) --output $(NAME).tex
-pdf:
+pdf: latex
 	latexrun --latex-args="$(PANDOC_PDF_OPTIONS)" --color never $(NAME).tex
-# pdf:
+# pdf: $(DEP)
 # 	pandoc \
 # 		$(PANDOC_OPTIONS) \
 # 		$(PANDOC_LATEX_OPTIONS) \
@@ -98,17 +108,23 @@ pdf:
 # RUN {{{
 run: run-pdf
 run-docx: docx
-	libreoffice --nologo $(NAME).docx \
+	soffice --nologo $(NAME).docx \
 	>/dev/null 2>&1 &
 run-odt: odt
-	okular $(NAME).odt \
+	soffice $(NAME).odt \
 	>/dev/null 2>&1 &
 run-epub: epub
 	okular $(NAME).epub \
 	>/dev/null 2>&1 &
+ifndef BROWSER
+override BROWSER = firefox
+# uses $BROWSER environment variable and falls back to firefox
 run-html: html
 	$(BROWSER) $(NAME).html \
 	>/dev/null 2>&1 &
+ifndef PDFVIEWER
+override PDFVIEWER = zathura
+# uses $PDFVIEWER environment variable and falls back to zathura
 run-pdf:
 	$(PDFVIEWER) $(NAME).pdf \
 	>/dev/null 2>&1 &
@@ -132,10 +148,12 @@ clean-pdf:
 # }}}
 
 # CHECK {{{
-check: check_latex
-check_html:
-	linkchecker $(NAME).html
-check_latex:
+check: check-links
+check-links:
+	brok --no-color --only-failures  $(FILES) > /dev/null
+check-html: html
+	linkchecker --check-extern $(NAME).html
+check-latex: latex
 	lacheck $(NAME).tex
 # }}}
 
@@ -143,13 +161,14 @@ preamble: $(NAME).tex
 	pdftex -ini -interaction=nonstopmode -jobname=preamble "&pdflatex" mylatexformat.ltx $(NAME).tex
 
 watch: html
-	if command -v entr > /dev/null; then \
-		find . -print | grep -i '.*[.]html' | entr -n reload-browser Firefox; \
+	if command -v browser-sync > /dev/null; then \
+		browser-sync start --server --files='$(CURDIR)/*.html, $(CURDIR)/stylesheets/*.css, $(CURDIR)/images/*.png, $(CURDIR)/images/*.jpg, $(CURDIR)/images/*.jpeg, $(CURDIR)/images/*.gif' --index '$(NAME).html'; \
+	elif command -v entr > /dev/null && command -v reload-browser > /dev/null; then \
+		find . -print | grep -i '.*[.]html' | entr -n reload-browser $(BROWSER); \
 	else $(MAKE) run-html; \
-		echo "\nInstall entr(1) to run tasks on file change. \n"; \
-		echo "See http://entrproject.org/"; fi
+		echo "\nInstall browser-sync(1) or entr(1) (and reload-browser) to watch file changes. \n"; \
+		echo "See http://browser-sync.io/ or http://entrproject.org/"; fi
 
-.PHONY: all run clean check
+.PHONY: all run clean check watch preamble
 
 # ex: ft=make:foldmethod=marker:
-
